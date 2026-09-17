@@ -1,5 +1,5 @@
 import * as Device from "expo-device";
-import { Button, Platform, ScrollView, StyleSheet } from "react-native";
+import { Button, Platform, ScrollView, StyleSheet, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AnimatedIcon } from "@/components/animated-icon";
@@ -30,11 +30,18 @@ function getDevMenuHint() {
 }
 
 export default function HomeScreen() {
-  const [items, setItems] = useState<string[]>(["Test 1", "Test 2"]);
+  const [items, setItems] = useState<{ id: number; title: string }[]>([]);
+  const [task, setTask] = useState("");
+  
 
   const addItem = () => {
-    const newItem = `Test ${items.length + 1}`;
-    setItems([...items, newItem]);
+    var lastId = items.at(-1)?.id??0
+    setItems([...items, {id :lastId + 1, title: task}]);
+    setTask("");
+  };
+
+  const deleteItem = (id: number) => {
+    setItems(prev => prev.filter(item => item.id !== id));
   };
 
   return (
@@ -47,7 +54,13 @@ export default function HomeScreen() {
           </ThemedText>
         </ThemedView>
         <ThemedView style={styles.heroSection}>
-          <Button title={"Add todo"} onPress={addItem} />
+          <TextInput
+          value={task}
+          onChangeText={setTask}
+          placeholder="Введите задачу"
+          />
+          <Button title="Add todo" onPress={addItem} />
+          
         </ThemedView>
 
         <ThemedText type="code" style={styles.code}>
@@ -56,8 +69,11 @@ export default function HomeScreen() {
         <ScrollView style={styles.scrollContainer}>
           <ThemedView type="backgroundElement" style={styles.stepContainer}>
             {items.map((item) => (
-              <HintRow key={item} title={item} />
-            ))}
+              <ThemedView key={item.id}>
+                <HintRow title={`Задача ${item.id}: ${item.title}`} />
+                <Button title="Удалить" onPress={() => deleteItem(item.id)} />
+              </ThemedView>
+              ))}
           </ThemedView>
         </ScrollView>
         {Platform.OS === "web" && <WebBadge />}
